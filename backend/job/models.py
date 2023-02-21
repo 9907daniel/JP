@@ -1,4 +1,5 @@
 from datetime import *
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -37,8 +38,7 @@ class Experience(models.TextChoices):
     THREE_YEAR_PLUS = '3 Years above'
 
 def return_date_time():
-    now = datetime.now()
-    return now + timedelta(days=10)
+    return timezone.now() + timezone.timedelta(days=10)
 
 class Job(models.Model):
     title = models.CharField(max_length=200, null=True)
@@ -69,7 +69,7 @@ class Job(models.Model):
     positions = models.IntegerField(default=1)
     company = models.CharField(max_length=100, null=True)
     point = gismodels.PointField(default=Point(0.0, 0.0))
-    lastDate = models.DateTimeField(default=return_date_time,)
+    lastDate = models.DateTimeField(default=return_date_time)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     createdAt = models.DateTimeField(auto_now_add=True)
 
