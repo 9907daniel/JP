@@ -1,11 +1,13 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db.models import Avg, Min, Max, Count
 
 from .serializers import JobSerializer
+
 from .models import Job
 
 from .filters import JobsFilter
@@ -50,8 +52,10 @@ def getJob(request, pk):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 # create new jobs
 def newJob(request):
+    request.data['user'] =  request.user
     data = request.data
 
     job = Job.objects.create(**data)
@@ -61,8 +65,12 @@ def newJob(request):
 
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def updateJob(request, pk):
     job = get_object_or_404(Job, id=pk)
+    
+    if job.user != request.user:
+        return Response({'message': 'Job Can not be updated'}, status = status.HTTP_403_FORBIDDEN)
 
     job.title = request.data['title']
     job.description = request.data['description']
@@ -84,10 +92,15 @@ def updateJob(request, pk):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def deleteJob(request, pk):
+    
     job = get_object_or_404(Job, id=pk)
     # job by id
-
+    
+    if job.user != request.user:
+        return Response({'message': 'Job can not be deleted'}, status = status.HTTP_403_FORBIDDEN)
+    
     job.delete()
 
     return Response({ 'message': 'Job is Deleted.' }, status=status.HTTP_200_OK)
