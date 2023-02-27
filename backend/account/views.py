@@ -7,6 +7,7 @@ from .serializers import SignUpSerializer, UserSerializer
 
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
+from .validators import validate_file_extension
 # Create your views here.
 
 @api_view(['POST'])
@@ -65,3 +66,27 @@ def updateUser(request):
     serializer = UserSerializer(user, many=False)
     
     return Response(serializer.data)
+    
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def uploadResume(request):
+    
+    user = request.user
+    resume = request.FILES['resume']
+    
+    # if resume is empty
+    if resume == '':
+        return Response({'error' : 'Resume must be submitted'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    isValidFile = validate_file_extension(resume.name)
+    
+    if not isValidFile:
+        return Response({'errror': 'File format must be pdf.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    serializer = UserSerializer(user, many=False)
+    user.userprofile.resume = resume
+    user.userprofile.save()
+    
+    return Response(serializer.data)
+    

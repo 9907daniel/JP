@@ -28,3 +28,6 @@ urlpatterns = [
     # this means usernamae will be verified upon contacting endpoint
     path('api/token/verify', TokenVerifyView.as_view()),
 ]
+
+handler500 = 'utils.error_views.handler500'
+handler404 = 'utils.error_views.handler404'
